@@ -8,6 +8,10 @@
 
  * Andre Lohmann (Nickname: andrelohmann)
   <lohmann dot andre at googlemail dot com>
+
+## Requirements
+
+Silverstripe 3.2.x
  
 
 ## Overview
@@ -30,4 +34,13 @@ Use the following method to get the ids of your albums and presets
 ```
 curl -X GET -H "Authorization: bearer VIMEO_ACCESS_TOKEN" https://api.vimeo.com/me/albums
 curl -X GET -H "Authorization: bearer VIMEO_ACCESS_TOKEN" https://api.vimeo.com/me/presets
+```
+
+### Notice
+This repository uses the git flow paradigm.
+After each release cycle, do not forget to push tags, master and develop to the remote origin
+```
+git push --tags
+git push origin develop
+git push origin master
 ```
