@@ -35,6 +35,7 @@ class VimeoVideoFile extends VideoFile {
 		'VimeoURI'   =>  'Varchar(255)',
         'VimeoLink'  =>  'Varchar(255)',
         'VimeoID' => 'Varchar(255)',
+        'VimeoHLSUrl' => 'Varchar(255)',
 		'VimeoFullHDUrl' => 'Varchar(255)', // 1080p
 		'VimeoHDUrl' => 'Varchar(255)', // 720p
 		'VimeoSDUrl' => 'Varchar(255)', // 360p
@@ -192,6 +193,8 @@ class VimeoVideoFile extends VideoFile {
 					else if($f['quality'] == 'sd') $availRes['sd'] = $f['link_secure'];
 					else if($f['quality'] == 'hd' && $f['height'] == 720) $availRes['hd'] = $f['link_secure'];
 					else if($f['quality'] == 'hd' && $f['height'] == 1080) $availRes['fullhd'] = $f['link_secure'];
+				}else if(isset($f['quality']) && $f['quality'] == 'hls' && isset($f['link_secure'])){
+					$availRes['hls'] = $f['link_secure'];
 				}
 			}
 			
@@ -206,6 +209,7 @@ class VimeoVideoFile extends VideoFile {
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoMobileUrl = $availRes['mobile'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
+						if(isset($availRes['hls'])) $this->VimeoHLSUrl = $availRes['hls'];
 						$this->VimeoProcessingStatus = 'finished';
 						$this->write();
 						return true;
@@ -219,6 +223,7 @@ class VimeoVideoFile extends VideoFile {
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoMobileUrl = $availRes['mobile'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
+						if(isset($availRes['hls'])) $this->VimeoHLSUrl = $availRes['hls'];
 						$this->VimeoProcessingStatus = 'finished';
 						$this->write();
 						return true;
@@ -231,6 +236,7 @@ class VimeoVideoFile extends VideoFile {
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoMobileUrl = $availRes['mobile'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
+						if(isset($availRes['hls'])) $this->VimeoHLSUrl = $availRes['hls'];
 						$this->VimeoProcessingStatus = 'finished';
 						$this->write();
 						return true;
@@ -341,6 +347,14 @@ class VimeoVideoFile extends VideoFile {
         if($this->VimeoProcessingStatus == 'finished')
 			if($this->VimeoMobileUrl)
 				return $this->VimeoMobileUrl;
+			
+		return false;
+    }
+    
+    public function getHLSUrl() {
+        if($this->VimeoProcessingStatus == 'finished')
+			if($this->VimeoHLSUrl)
+				return $this->VimeoHLSUrl;
 			
 		return false;
     }
