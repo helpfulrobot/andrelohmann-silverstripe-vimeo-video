@@ -31,7 +31,7 @@ class VimeoVideoFile extends VideoFile {
 	//const VIMEO_ERROR_
 	
 	private static $db = array(
-		'VimeoProcessingStatus' => "Enum(array('unprocessed','uploading','processing','error','finished'))", // uploading, processing, finished
+		'VimeoProcessingStatus' => "Enum(array('unprocessed','uploading','updating','processing','error','finished'))", // uploading, processing, finished
 		'VimeoURI'   =>  'Varchar(255)',
         'VimeoLink'  =>  'Varchar(255)',
         'VimeoID' => 'Varchar(255)',
@@ -100,6 +100,10 @@ class VimeoVideoFile extends VideoFile {
 			break;
 		
 			case 'processing':
+				// just do nothing
+			break;
+		
+			case 'updating':
 				// just do nothing
 			break;
 		
@@ -178,11 +182,21 @@ class VimeoVideoFile extends VideoFile {
 		if(isset($data['body']) && isset($data['body']['status']) && $data['body']['status'] == 'available'){
 			// fetch source resolution
 			$sourceMeasures = array();
+			$biggestWidth = 0;
+			$biggestHeight = 0;
 			foreach($data['body']['download'] as $dl){
+				if($biggestWidth < $dl['width']) $biggestWidth = $dl['width'];
+				if($biggestHeight < $dl['height']) $biggestHeight = $dl['height'];
+				
+				// check if source is still existent
 				if(isset($dl['type']) && $dl['type'] == 'source'){
 					$sourceMeasures['width'] = $dl['width'];
 					$sourceMeasures['height'] = $dl['height'];
 				}
+			}
+			if(!(isset($sourceMeasures['width']) && isset($sourceMeasures['height']))){
+				$sourceMeasures['width'] = $biggestWidth;
+				$sourceMeasures['height'] = $biggestHeight;
 			}
 			
 			// fetch available resolution
@@ -244,7 +258,11 @@ class VimeoVideoFile extends VideoFile {
 						return false;
 					}
 				}
+			}else{
+				return false;
 			}
+		}else{
+			return false;
 		}
 	}
 	
@@ -388,6 +406,37 @@ class VimeoVideoFile extends VideoFile {
 	
 	protected function onAfterProcess() {
 		parent::onAfterProcess();
+	}
+	
+	public function updateVimeoData(){
+		if($this->VimeoProcessingStatus == 'finished'){
+			
+			$this->VimeoProcessingStatus = 'updating';
+			$this->write();
+			
+			$this->appendLog($this->getLogFile(), 'IsProcessed - updating');
+			
+			$lib = new \Vimeo\Vimeo(Config::inst()->get('VimeoVideoFile', 'client_id'), Config::inst()->get('VimeoVideoFile', 'client_secret'), Config::inst()->get('VimeoVideoFile', 'access_token'));
+			// Send a request to vimeo for uploading the new video
+			$video_data = $lib->request($this->VimeoURI);
+			
+			$this->extractUrls($video_data);
+			
+			// Set Title, Album and player preset
+			$lib->request($this->VimeoURI, array('name' => $this->Name), 'PATCH');
+			if(Config::inst()->get('VimeoVideoFile', 'album_id')){
+				$res = $lib->request('/me/albums/'.Config::inst()->get('VimeoVideoFile', 'album_id').$this->VimeoURI, array(), 'PUT');
+				$this->appendLog($this->getLogFile(), 'Updated Album', print_r($res, true));
+			}
+			if(Config::inst()->get('VimeoVideoFile', 'preset_id')){
+				$res = $lib->request($this->VimeoURI.'/presets/'.Config::inst()->get('VimeoVideoFile', 'preset_id'), array(), 'PUT');
+				$this->appendLog($this->getLogFile(), 'Updated Player Preset', print_r($res, true));
+			}
+			
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 }
