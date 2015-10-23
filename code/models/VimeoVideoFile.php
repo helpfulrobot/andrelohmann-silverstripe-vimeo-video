@@ -83,7 +83,7 @@ class VimeoVideoFile extends VideoFile {
 		
 	protected function vimeoProcess($LogFile, $runAfterProcess = true){
 		
-		$this->appendLog($LogFile, "vimeoPress() started");
+		$this->appendLog($LogFile, "vimeoProcess() started");
 		
 		switch($this->VimeoProcessingStatus){
 			case 'unprocessed':
@@ -168,10 +168,14 @@ class VimeoVideoFile extends VideoFile {
 				return false; 
 			}
 		} catch(\Vimeo\Exceptions\VimeoRequestException $e) {
-			$this->appendLog($LogFile, $e->getMessage());
+			$this->VimeoProcessingStatus = 'error';
+			$this->write();
+			$this->appendLog($LogFile, "VimeoRequestException:\n".$e->getMessage());
 			return false;
 		} catch (\Vimeo\Exceptions\VimeoUploadException $e) {
-			$this->appendLog($LogFile, $e->getMessage());
+			$this->VimeoProcessingStatus = 'error';
+			$this->write();
+			$this->appendLog($LogFile,  "VimeoUploadException:\n".$e->getMessage());
 			return false;
 		}
          
