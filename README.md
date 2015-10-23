@@ -1,7 +1,5 @@
 # Silverstripe Vimeo Video File - (c) Eduard Malyj (and others) 2015
 
-## Silverstripe Version 3.1.13
-
 ## Maintainer Contact 
  * Eduard Malyj
    <eduard.malyj (at) gmail (dot) com>
@@ -17,6 +15,8 @@ Silverstripe 3.2.x
 ## Overview
 this module offes an extended VideoFile Object with automatically upload functionality to your vimeo pro account.
 the module extends andrelohmann-silverstripe/extendedobjects.
+
+you need to create an app on https://developer.vimeo.com/apps/new and afterwards request upload for this application (takes up to 5 days) and create an access token
 
 ## Usage
 
