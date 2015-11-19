@@ -31,7 +31,7 @@ class VimeoVideoFile extends VideoFile {
 	//const VIMEO_ERROR_
 	
 	private static $db = array(
-		'VimeoProcessingStatus' => "Enum(array('unprocessed','uploading','updating','processing','error','finished'))", // uploading, processing, finished
+		'VimeoProcessingStatus' => "Enum(array('unprocessed','uploading','updating','processing','processingerror','error','finished'))", // uploading, processing, finished
 		'VimeoURI'   =>  'Varchar(255)',
         'VimeoLink'  =>  'Varchar(255)',
         'VimeoID' => 'Varchar(255)',
@@ -86,6 +86,7 @@ class VimeoVideoFile extends VideoFile {
 		$this->appendLog($LogFile, "vimeoProcess() started");
 		
 		switch($this->VimeoProcessingStatus){
+			case 'processingerror':
 			case 'unprocessed':
 				
 				// upload the Video
@@ -129,6 +130,14 @@ class VimeoVideoFile extends VideoFile {
 			
 			if($lib = new \Vimeo\Vimeo(Config::inst()->get('VimeoVideoFile', 'client_id'), Config::inst()->get('VimeoVideoFile', 'client_secret'), Config::inst()->get('VimeoVideoFile', 'access_token'))){
 				// Send a request to vimeo for uploading the new video
+				if($this->VimeoURI){
+					$uri = $lib->request($this->VimeoURI, array(), 'DELETE');
+					$this->VimeoURI = null;
+					$this->VimeoLink = null;
+					$this->VimeoID = null;
+					$this->write();
+				}
+				
 				$uri = $lib->upload($this->getFullPath(), false);
 				//$uri = "/videos/134840586";
 				$video_data = $lib->request($uri);
@@ -144,12 +153,17 @@ class VimeoVideoFile extends VideoFile {
 					
 					$this->appendLog($LogFile, "File uploaded to Vimeo");
 
-					if($video_data['body']['status'] != 'available'){
+					if($video_data['body']['status'] == 'available'){
+						return $this->extractUrls($video_data);
+					}else if($video_data['body']['status'] == 'uploading' || $video_data['body']['status'] == 'transcoding'){
 						$this->VimeoProcessingStatus = 'processing';
 						$this->write();
 						return false;
-					}else{
-						return $this->extractUrls($video_data);
+					}else {
+						// quota_exceeded, uploading_error, transcoding_error => processingerror
+						$this->VimeoProcessingStatus = 'processingerror';
+						$this->write();
+						return false;
 					}
 					
 				} else {
@@ -265,6 +279,10 @@ class VimeoVideoFile extends VideoFile {
 			}else{
 				return false;
 			}
+		}else if(isset($data['body']) && isset($data['body']['status']) && ($data['body']['status'] == 'quota_exceeded' || $data['body']['status'] == 'uploading_error' || $data['body']['status'] == 'transcoding_error')){
+			$this->VimeoProcessingStatus = 'processingerror';
+			$this->write();
+			return false;
 		}else{
 			return false;
 		}
