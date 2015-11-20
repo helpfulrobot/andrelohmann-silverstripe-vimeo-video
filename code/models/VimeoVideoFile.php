@@ -240,7 +240,7 @@ class VimeoVideoFile extends VideoFile {
 						$availRes['fullhd_secure'] = $f['link_secure'];
 					}
 				}else if(isset($f['quality']) && $f['quality'] == 'hls' && isset($f['link']) && isset($f['link_secure'])){
-					$availRes['hls'] = $f['link'];
+					$availRes['hls'] = str_replace('https', 'http', $f['link']);
 					$availRes['hls_secure'] = $f['link_secure'];
 				}
 			}
@@ -273,6 +273,8 @@ class VimeoVideoFile extends VideoFile {
 				}else if($sourceMeasures['width'] >= 1280 && $sourceMeasures['height'] >= 720){
 					// Video is HD, so at least HD schould be available
 					if(isset($availRes['hd']) && isset($availRes['sd']) && isset($availRes['mobile'])){
+						$this->VimeoFullHDUrl = null;
+						$this->VimeoFullHDUrlSecure = null;
 						$this->VimeoHDUrl = $availRes['hd'];
 						$this->VimeoHDUrlSecure = $availRes['hd_secure'];
 						$this->VimeoSDUrl = $availRes['sd'];
@@ -293,6 +295,10 @@ class VimeoVideoFile extends VideoFile {
 				}else{
 					// Video is SD, so at least SD schould be available
 					if(isset($availRes['sd']) && isset($availRes['mobile'])){
+						$this->VimeoFullHDUrl = null;
+						$this->VimeoFullHDUrlSecure = null;
+						$this->VimeoHDUrl = null;
+						$this->VimeoHDUrlSecure = null;
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoSDUrlSecure = $availRes['sd_secure'];
 						$this->VimeoMobileUrl = $availRes['mobile'];
