@@ -39,7 +39,7 @@ class UpdateVimeoVideoFiles extends BuildTask {
 			sleep(5);
 		}
 
-		echo "$processedFiles of $processingFiles processing files are now processed.";
+		echo "$updatedFiles files have been updated.";
 	}
 
 }
