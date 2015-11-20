@@ -34,7 +34,7 @@ class UpdateVimeoVideoFiles extends BuildTask {
 			
 			$updatedFiles++;
 			
-			if($vid->IsProcessed()) $processedFiles++;
+			$vid->updateVimeoData();
 			
 			sleep(5);
 		}
