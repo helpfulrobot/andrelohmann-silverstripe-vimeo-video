@@ -14,7 +14,7 @@ Silverstripe 3.2.x
 
 ## Overview
 this module offes an extended VideoFile Object with automatically upload functionality to your vimeo pro account.
-the module extends andrelohmann-silverstripe/extendedobjects.
+the module extends andrelohmann-silverstripe/mediafiles
 
 you need to create an app on https://developer.vimeo.com/apps/new and afterwards request upload for this application (takes up to 5 days) and create an access token
 
@@ -34,13 +34,4 @@ Use the following method to get the ids of your albums and presets
 ```
 curl -X GET -H "Authorization: bearer VIMEO_ACCESS_TOKEN" https://api.vimeo.com/me/albums
 curl -X GET -H "Authorization: bearer VIMEO_ACCESS_TOKEN" https://api.vimeo.com/me/presets
-```
-
-### Notice
-This repository uses the git flow paradigm.
-After each release cycle, do not forget to push tags, master and develop to the remote origin
-```
-git push --tags
-git push origin develop
-git push origin master
 ```
