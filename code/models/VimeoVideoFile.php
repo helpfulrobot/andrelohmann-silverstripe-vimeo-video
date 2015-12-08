@@ -43,8 +43,6 @@ class VimeoVideoFile extends VideoFile {
 		'VimeoHDUrlSecure' => 'Varchar(255)', // 720p
 		'VimeoSDUrl' => 'Varchar(255)', // 360p
 		'VimeoSDUrlSecure' => 'Varchar(255)', // 360p
-		'VimeoMobileUrl' => 'Varchar(255)',
-		'VimeoMobileUrlSecure' => 'Varchar(255)',
         'VimeoPicturesURI'  =>  'Varchar(255)'
 	);
 	
@@ -226,10 +224,7 @@ class VimeoVideoFile extends VideoFile {
 			$availRes = array();
 			foreach($data['body']['files'] as $f){
 				if(isset($f['quality']) && isset($f['width']) && isset($f['height']) && isset($f['link']) && isset($f['link_secure'])){
-					if($f['quality'] == 'mobile'){
-						$availRes['mobile'] = $f['link'];
-						$availRes['mobile_secure'] = $f['link_secure'];
-					}else if($f['quality'] == 'sd'){
+					if($f['quality'] == 'sd'){
 						$availRes['sd'] = $f['link'];
 						$availRes['sd_secure'] = $f['link_secure'];
 					}else if($f['quality'] == 'hd' && $f['height'] == 720){
@@ -250,15 +245,13 @@ class VimeoVideoFile extends VideoFile {
 				// check for highest resolution
 				if($sourceMeasures['width'] >= 1920 && $sourceMeasures['height'] >= 1080){
 					// Video is full HD, so Full HD should be availalbe
-					if(isset($availRes['fullhd']) && isset($availRes['hd']) && isset($availRes['sd']) && isset($availRes['mobile'])){
+					if(isset($availRes['fullhd']) && isset($availRes['hd']) && isset($availRes['sd'])){
 						$this->VimeoFullHDUrl = $availRes['fullhd'];
 						$this->VimeoFullHDUrlSecure = $availRes['fullhd_secure'];
 						$this->VimeoHDUrl = $availRes['hd'];
 						$this->VimeoHDUrlSecure = $availRes['hd_secure'];
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoSDUrlSecure = $availRes['sd_secure'];
-						$this->VimeoMobileUrl = $availRes['mobile'];
-						$this->VimeoMobileUrlSecure = $availRes['mobile_secure'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
 						if(isset($availRes['hls'])){
 							$this->VimeoHLSUrl = $availRes['hls'];
@@ -272,15 +265,13 @@ class VimeoVideoFile extends VideoFile {
 					}
 				}else if($sourceMeasures['width'] >= 1280 && $sourceMeasures['height'] >= 720){
 					// Video is HD, so at least HD schould be available
-					if(isset($availRes['hd']) && isset($availRes['sd']) && isset($availRes['mobile'])){
+					if(isset($availRes['hd']) && isset($availRes['sd'])){
 						$this->VimeoFullHDUrl = null;
 						$this->VimeoFullHDUrlSecure = null;
 						$this->VimeoHDUrl = $availRes['hd'];
 						$this->VimeoHDUrlSecure = $availRes['hd_secure'];
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoSDUrlSecure = $availRes['sd_secure'];
-						$this->VimeoMobileUrl = $availRes['mobile'];
-						$this->VimeoMobileUrlSecure = $availRes['mobile_secure'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
 						if(isset($availRes['hls'])){
 							$this->VimeoHLSUrl = $availRes['hls'];
@@ -294,15 +285,13 @@ class VimeoVideoFile extends VideoFile {
 					}
 				}else{
 					// Video is SD, so at least SD schould be available
-					if(isset($availRes['sd']) && isset($availRes['mobile'])){
+					if(isset($availRes['sd'])){
 						$this->VimeoFullHDUrl = null;
 						$this->VimeoFullHDUrlSecure = null;
 						$this->VimeoHDUrl = null;
 						$this->VimeoHDUrlSecure = null;
 						$this->VimeoSDUrl = $availRes['sd'];
 						$this->VimeoSDUrlSecure = $availRes['sd_secure'];
-						$this->VimeoMobileUrl = $availRes['mobile'];
-						$this->VimeoMobileUrlSecure = $availRes['mobile_secure'];
 						$this->VimeoPicturesURI = $data['body']['pictures']['uri'];
 						if(isset($availRes['hls'])){
 							$this->VimeoHLSUrl = $availRes['hls'];
@@ -415,19 +404,13 @@ class VimeoVideoFile extends VideoFile {
     
     public function getSDUrl() {
         if($this->VimeoProcessingStatus == 'finished'){
-			if($this->VimeoSDUrl) return $this->VimeoSDUrl;
-			else return $this->getMobileUrl();
+			if($this->VimeoSDUrl)
+				return $this->VimeoSDUrl;
+			else
+				return false;
 		}else{
 			return false;
 		}
-    }
-    
-    public function getMobileUrl() {
-        if($this->VimeoProcessingStatus == 'finished')
-			if($this->VimeoMobileUrl)
-				return $this->VimeoMobileUrl;
-			
-		return false;
     }
     
     public function getHLSUrl() {
@@ -458,19 +441,13 @@ class VimeoVideoFile extends VideoFile {
     
     public function getSDUrlSecure() {
         if($this->VimeoProcessingStatus == 'finished'){
-			if($this->VimeoSDUrlSecure) return $this->VimeoSDUrlSecure;
-			else return $this->getMobileUrlSecure();
+			if($this->VimeoSDUrlSecure)
+				return $this->VimeoSDUrlSecure;
+			else
+				return false;
 		}else{
 			return false;
 		}
-    }
-    
-    public function getMobileUrlSecure() {
-        if($this->VimeoProcessingStatus == 'finished')
-			if($this->VimeoMobileUrlSecure)
-				return $this->VimeoMobileUrlSecure;
-			
-		return false;
     }
     
     public function getHLSUrlSecure() {
